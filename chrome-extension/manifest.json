@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Ransomware Detection Extension",
+  "version": "1.0",
+  "description": "Detects ransomware-like web behavior using ML and signature-based backend",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://127.0.0.1:5000/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
