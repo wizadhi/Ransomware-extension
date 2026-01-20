@@ -4,3 +4,4 @@ pandas
 joblib
 scikit-learn
 uvicorn
+python-multipart
