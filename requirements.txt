@@ -6,3 +6,4 @@ scikit-learn
 uvicorn
 python-multipart
 pydantic
+httpx
