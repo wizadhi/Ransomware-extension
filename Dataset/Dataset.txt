@@ -1,0 +1,6 @@
+import kagglehub
+
+# Download latest version
+path = kagglehub.dataset_download("amdj3dax/ransomware-detection-data-set")
+
+print("Path to dataset files:", path)

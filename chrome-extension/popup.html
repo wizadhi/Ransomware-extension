@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ransomware Shield</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060910;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --border: #21262d;
+      --accent: #00ff9d;
+      --accent2: #00cfff;
+      --danger: #ff3a3a;
+      --warn: #ffb700;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-ui: 'Rajdhani', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      width: 360px;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* SCANLINE EFFECT */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,255,157,0.015) 2px,
+        rgba(0,255,157,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0d1117 0%, #0f1923 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.6;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 12px rgba(0,255,157,0.3);
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    .logo-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    /* TOGGLE */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: all 0.3s;
+    }
+
+    .status-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 22px;
+    }
+    .switch input { display: none; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #1c2128;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .slider:before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 2px; top: 2px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    input:checked + .slider {
+      background: rgba(0,255,157,0.15);
+      border-color: var(--accent);
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(0,255,157,0.05);
+    }
+
+    /* PANELS */
+    .panel { display: none; padding: 14px 16px; }
+    .panel.active { display: block; }
+
+    /* SCAN ZONE */
+    .drop-zone {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(0,255,157,0.05);
+    }
+    .drop-zone-icon { font-size: 24px; margin-bottom: 6px; }
+    .drop-zone-text { font-size: 12px; color: var(--muted); }
+    .drop-zone-text strong { color: var(--accent); }
+    #fileInput { display: none; }
+
+    .selected-file {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent2);
+    }
+
+    /* URL INPUT */
+    .input-group {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    .url-input {
+      flex: 1;
+      padding: 9px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-input:focus { border-color: var(--accent); }
+    .url-input::placeholder { color: var(--muted); }
+
+    /* BUTTONS */
+    .btn {
+      padding: 9px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #00c17a, #00ff9d);
+      color: #060910;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .btn-primary:hover { box-shadow: 0 0 16px rgba(0,255,157,0.4); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-sm {
+      padding: 9px 14px;
+      background: var(--surface2);
+      color: var(--accent2);
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .btn-sm:hover { border-color: var(--accent2); }
+
+    /* RESULT */
+    #result {
+      margin-top: 12px;
+      display: none;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .result-header {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .result-icon { font-size: 20px; }
+    .result-title { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+    .result-sub { font-size: 11px; opacity: 0.7; font-family: var(--font-mono); }
+
+    .result-safe .result-header { background: rgba(0,255,157,0.1); }
+    .result-safe .result-title { color: var(--accent); }
+    .result-danger .result-header { background: rgba(255,58,58,0.1); }
+    .result-danger .result-title { color: var(--danger); }
+
+    .result-body {
+      background: var(--surface);
+      padding: 10px 14px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-key { color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+    .result-val { font-weight: 600; font-family: var(--font-mono); font-size: 11px; }
+    .val-green { color: var(--accent); }
+    .val-red { color: var(--danger); }
+    .val-yellow { color: var(--warn); }
+
+    /* SCANNING ANIMATION */
+    .scanning-bar {
+      display: none;
+      margin-top: 12px;
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .scanning-bar.active { display: block; }
+    .scanning-fill {
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: scan 1.2s infinite;
+    }
+    @keyframes scan {
+      0% { transform: translateX(-200%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* HISTORY PANEL */
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .history-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .clear-btn {
+      font-size: 10px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      text-decoration: underline;
+    }
+    .clear-btn:hover { color: var(--danger); }
+
+    .history-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: transparent; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      transition: border-color 0.2s;
+    }
+    .history-item:hover { border-color: #30363d; }
+    .history-badge {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-safe { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+    .badge-danger { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
+    .history-info { flex: 1; min-width: 0; }
+    .history-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .history-prob {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .empty-history {
+      text-align: center;
+      padding: 30px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .empty-history div:first-child { font-size: 28px; margin-bottom: 8px; }
+
+    /* FOOTER */
+    .footer {
+      padding: 8px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-stat {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .footer-stat span { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <div class="logo-text">RANSOMWARE SHIELD</div>
+        <div class="logo-sub">THREAT DETECTION SYSTEM</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTO PROTECTION TOGGLE -->
+<div class="toggle-row">
+  <div class="toggle-label">
+    <div class="status-dot" id="statusDot"></div>
+    AUTO PROTECTION
+  </div>
+  <label class="switch">
+    <input type="checkbox" id="toggleAuto">
+    <span class="slider"></span>
+  </label>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="file">📁 File Scan</div>
+  <div class="tab" data-tab="url">🔗 URL Scan</div>
+  <div class="tab" data-tab="history">🕒 History</div>
+</div>
+
+<!-- FILE SCAN PANEL -->
+<div class="panel active" id="panel-file">
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-zone-icon">📂</div>
+    <div class="drop-zone-text">Drop file here or <strong>click to browse</strong></div>
+    <input type="file" id="fileInput">
+  </div>
+  <div class="selected-file" id="selectedFile">
+    <span>📄</span>
+    <span id="selectedFileName"></span>
+  </div>
+  <div class="scanning-bar" id="scanBar"><div class="scanning-fill"></div></div>
+  <button class="btn btn-primary" id="scanBtn" disabled>RUN SCAN</button>
+  <div id="result"></div>
+</div>
+
+<!-- URL SCAN PANEL -->
+<div class="panel" id="panel-url">
+  <div class="drop-zone" style="cursor:default; padding: 12px 16px;">
+    <div class="drop-zone-icon">🌐</div>
+    <div class="drop-zone-text">Analyze a URL for ransomware indicators</div>
+  </div>
+  <div class="input-group">
+    <input type="text" class="url-input" id="urlInput" placeholder="https://example.com/suspicious-file.exe">
+    <button class="btn btn-sm" id="urlScanBtn">SCAN</button>
+  </div>
+  <div class="scanning-bar" id="urlScanBar"><div class="scanning-fill"></div></div>
+  <div id="urlResult"></div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+  <div class="history-header">
+    <div class="history-title">Scan History</div>
+    <button class="clear-btn" id="clearHistory">Clear All</button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-stat">SCANS TODAY: <span id="scanCount">0</span></div>
+  <div class="footer-stat">THREATS BLOCKED: <span id="threatCount">0</span></div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
